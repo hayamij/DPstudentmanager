@@ -1,0 +1,116 @@
+@startuml UseCaseDiagram
+
+!theme plain
+skinparam usecase {
+    BackgroundColor #E8F4FD
+    BorderColor #4A90E2
+}
+skinparam actor {
+    BackgroundColor #FFE5B4
+    BorderColor #E67E22
+}
+
+title "Use Case Diagram - Student Manager System"
+
+left to right direction
+
+actor "Người dùng\n(User)" as User
+actor "Quản trị viên\n(Admin)" as Admin
+
+rectangle "Student Manager System" {
+    
+    usecase "Xem danh sách\nsính viên" as UC1
+    usecase "Thêm sinh viên mới" as UC2
+    usecase "Tính điểm GPA" as UC3
+    usecase "Phân loại học lực" as UC4
+    usecase "Kết nối\ncơ sở dữ liệu" as UC5
+    usecase "Validate\ndữ liệu sinh viên" as UC6
+    usecase "Quản lý\nkết nối database" as UC7
+    usecase "Phân biệt loại\nsình viên" as UC8
+    usecase "Tính điểm\nsinh viên Software" as UC9
+    usecase "Tính điểm\nsinh viên Economics" as UC10
+}
+
+' User use cases
+User --> UC1
+User --> UC2
+
+' Includes relationships
+UC1 ..> UC3 : <<include>>
+UC1 ..> UC4 : <<include>>
+UC1 ..> UC5 : <<include>>
+UC1 ..> UC8 : <<include>>
+
+UC2 ..> UC6 : <<include>>
+UC2 ..> UC5 : <<include>>
+
+UC3 ..> UC9 : <<include>>
+UC3 ..> UC10 : <<include>>
+
+UC8 ..> UC9 : <<include>>
+UC8 ..> UC10 : <<include>>
+
+' Extends relationships
+UC2 .> UC1 : <<extend>>
+
+' Admin use cases
+Admin --> UC5
+Admin --> UC7
+
+note right of UC3
+    Tính GPA khác nhau cho
+    sinh viên Software và Economics:
+    
+    **Software:**
+    GPA = (Java*2 + HTML + CSS) / 4
+    
+    **Economics:**
+    GPA = (Marketing*2 + Sales) / 3
+end note
+
+note right of UC6
+    Validation bao gồm:
+    • Format ngày sinh (dd/MM/yyyy)
+    • Điểm số (0-10)
+    • Mã sinh viên (không trống, unique)
+    • Tên sinh viên (không trống)
+    • Chuyên ngành (Software/Economics)
+end note
+
+note right of UC4
+    Phân loại học lực dựa trên GPA:
+    • Giỏi: GPA ≥ 8.0
+    • Khá: 6.5 ≤ GPA < 8.0
+    • Trung bình: 5.0 ≤ GPA < 6.5
+    • Yếu: GPA < 5.0
+end note
+
+note left of UC5
+    Kết nối SQL Server Database:
+    • Load JDBC Driver
+    • Establish connection
+    • Handle connection errors
+    • Connection pooling (future)
+end note
+
+note bottom of User
+    **Quyền của User:**
+    ✓ Xem danh sách sinh viên
+    ✓ Thêm sinh viên mới
+    ✓ Xem điểm GPA và xếp loại
+    
+    **Không thể:**
+    ✗ Sửa thông tin sinh viên
+    ✗ Xóa sinh viên
+    ✗ Cấu hình hệ thống
+end note
+
+note bottom of Admin
+    **Quyền của Admin:**
+    ✓ Tất cả quyền của User
+    ✓ Quản lý kết nối database
+    ✓ Cấu hình hệ thống
+    ✓ Backup/restore dữ liệu
+end note
+
+@enduml

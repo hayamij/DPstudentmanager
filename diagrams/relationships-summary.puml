@@ -1,0 +1,157 @@
+@startuml StudentManagerRelationships
+
+!theme plain
+skinparam class {
+    BackgroundColor #F0F8FF
+    BorderColor #4682B4
+}
+
+title "Student Manager - Chi Tiết 4 Loại Quan Hệ UML"
+
+' Simplified classes focusing on relationships
+abstract class Student {
+    # id: String
+    # name: String
+    + calculateGPA(): double
+}
+
+class SoftwareStudent {
+    - javaScore: double
+    + calculateGPA(): double
+}
+
+class EconomicsStudent {
+    - marketingScore: double
+    + calculateGPA(): double
+}
+
+class StudentListViewUI {
+    - table: JTable
+    - listViewUseCase: StudentListViewUseCase
+    - addStudentUseCase: AddStudentUseCase
+    + showList(): void
+}
+
+class AddStudentDialog {
+    - parentUI: StudentListViewUI
+    - addStudentUseCase: AddStudentUseCase
+    + saveStudent(): void
+}
+
+class StudentListViewUseCase {
+    - studentDAO: StudentListViewDAO
+    - studentUI: StudentListViewUI
+    + execute(): void
+}
+
+class AddStudentUseCase {
+    - studentDAO: StudentListViewDAO
+    + execute(student): boolean
+}
+
+class StudentListViewDAO {
+    + getAll(): List<Student>
+    + insert(student): boolean
+}
+
+class AppStudent {
+    + main(): void
+}
+
+' ==== 1. INHERITANCE (Thừa kế) ====
+Student <|-- SoftwareStudent : **INHERITANCE**\n"IS-A"\nSoftwareStudent kế thừa Student
+Student <|-- EconomicsStudent : **INHERITANCE**\n"IS-A"\nEconomicsStudent kế thừa Student
+
+' ==== 2. COMPOSITION (Kết hợp mạnh) ====
+StudentListViewUI *-- StudentListViewUseCase : **COMPOSITION**\n"OWNS"\nUI sở hữu UseCase\nUseCase chết khi UI chết
+StudentListViewUI *-- AddStudentUseCase : **COMPOSITION**\n"OWNS"\nUI sở hữu UseCase\nUseCase chết khi UI chết
+
+' ==== 3. AGGREGATION (Kết hợp yếu) ====
+StudentListViewUseCase o-- StudentListViewDAO : **AGGREGATION**\n"HAS-A"\nUseCase dùng DAO\nDAO có thể tồn tại độc lập
+AddStudentUseCase o-- StudentListViewDAO : **AGGREGATION**\n"HAS-A"\nUseCase dùng DAO\nDAO có thể tồn tại độc lập
+StudentListViewUseCase o-- StudentListViewUI : **AGGREGATION**\n"HAS-A"\nUseCase dùng UI\nUI có thể tồn tại độc lập
+
+' ==== 4. ASSOCIATION (Liên kết) ====
+AddStudentDialog --> AddStudentUseCase : **ASSOCIATION**\n"USES"\nDialog sử dụng UseCase
+AddStudentDialog --> StudentListViewUI : **ASSOCIATION**\n"KNOWS"\nDialog biết parent UI
+StudentListViewDAO --> Student : **ASSOCIATION**\n"CREATES"\nDAO tạo ra Student objects
+AppStudent --> StudentListViewUI : **ASSOCIATION**\n"CREATES"\nMain tạo ra UI
+AppStudent --> StudentListViewDAO : **ASSOCIATION**\n"CREATES"\nMain tạo ra DAO
+AppStudent --> StudentListViewUseCase : **ASSOCIATION**\n"CREATES"\nMain tạo ra UseCase
+AppStudent --> AddStudentUseCase : **ASSOCIATION**\n"CREATES"\nMain tạo ra UseCase
+
+' Detailed explanation for each relationship type
+note as InheritanceNote
+    **1. INHERITANCE (Thừa kế) - Ký hiệu: <|--**
+    
+    **Đặc điểm:**
+    • Quan hệ "IS-A" (là một)
+    • Con kế thừa tất cả từ cha
+    • Polymorphism được hỗ trợ
+    • Template Method pattern
+    
+    **Trong hệ thống:**
+    • SoftwareStudent IS-A Student
+    • EconomicsStudent IS-A Student
+    • calculateGPA() được override
+end note
+
+note as CompositionNote
+    **2. COMPOSITION (Kết hợp mạnh) - Ký hiệu: *--**
+    
+    **Đặc điểm:**
+    • Quan hệ "PART-OF" mạnh
+    • Part không thể tồn tại mà không có Whole
+    • Whole chết → Part cũng chết
+    • Sở hữu hoàn toàn
+    
+    **Trong hệ thống:**
+    • UI owns các UseCase
+    • Khi UI bị destroy → UseCase cũng bị destroy
+    • UseCase được khởi tạo bởi UI
+end note
+
+note as AggregationNote
+    **3. AGGREGATION (Kết hợp yếu) - Ký hiệu: o--**
+    
+    **Đặc điểm:**
+    • Quan hệ "HAS-A" yếu
+    • Part có thể tồn tại độc lập
+    • Whole chết → Part vẫn sống
+    • Shared ownership
+    
+    **Trong hệ thống:**
+    • UseCase HAS-A DAO
+    • UseCase HAS-A UI
+    • DAO có thể được share giữa nhiều UseCase
+end note
+
+note as AssociationNote
+    **4. ASSOCIATION (Liên kết) - Ký hiệu: -->**
+    
+    **Đặc điểm:**
+    • Quan hệ "USES/KNOWS"
+    • Đối tượng biết về nhau
+    • Có thể có multiplicity
+    • Loosely coupled
+    
+    **Trong hệ thống:**
+    • Dialog USES UseCase
+    • Dialog KNOWS parent UI
+    • DAO CREATES Student objects
+    • Main CREATES tất cả components
+end note
+
+' Summary table
+note as SummaryNote
+    **Tóm tắt so sánh:**
+    
+    | Loại | Ký hiệu | Ý nghĩa | Lifecycle | Ví dụ |
+    |------|---------|---------|-----------|-------|
+    | Inheritance | <\|-- | IS-A | N/A | Student←SoftwareStudent |
+    | Composition | *-- | PART-OF mạnh | Cùng chết | UI*--UseCase |
+    | Aggregation | o-- | HAS-A yếu | Độc lập | UseCase o-- DAO |
+    | Association | --> | USES/KNOWS | Độc lập | Dialog→UseCase |
+end note
+
+@enduml

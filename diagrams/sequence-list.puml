@@ -1,0 +1,56 @@
+@startuml ShowStudentListSequence
+
+!theme plain
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 20
+skinparam maxmessagesize 120
+
+title "Sequence Diagram - Hiển thị danh sách sinh viên"
+
+actor User
+participant "ui: StudentListViewUI" as UI
+participant "useCase: StudentListViewUseCase" as UseCase
+participant "dao: StudentListViewDAO" as DAO
+database "SQL Server Database" as DB
+
+User -> UI: Khởi động ứng dụng
+activate UI
+
+UI -> UseCase: execute()
+activate UseCase
+note right: Thực hiện use case\nhiển thị danh sách
+
+UseCase -> DAO: getAll()
+activate DAO
+note right: Lấy tất cả sinh viên\ntừ database
+
+DAO -> DB: SELECT * FROM student
+activate DB
+note right: Thực hiện truy vấn SQL
+DB --> DAO: ResultSet
+deactivate DB
+
+DAO -> DAO: Phân tích ResultSet
+note right: Chuyển đổi dữ liệu\nthành đối tượng Student
+
+DAO -> DAO: Tạo SoftwareStudent/EconomicsStudent objects
+DAO --> UseCase: List<Student>
+deactivate DAO
+
+UseCase -> UI: showList(students)
+note right: Hiển thị danh sách\ntrên giao diện
+
+UI -> UI: Cập nhật DefaultTableModel
+UI -> UI: Refresh JTable
+UI --> User: Hiển thị danh sách sinh viên
+deactivate UseCase
+deactivate UI
+
+note over User, DB
+    Luồng này được thực hiện khi:
+    1. Khởi động ứng dụng
+    2. Sau khi thêm sinh viên mới
+    3. Khi refresh danh sách
+end note
+
+@enduml

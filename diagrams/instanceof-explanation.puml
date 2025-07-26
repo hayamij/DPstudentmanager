@@ -1,0 +1,129 @@
+@startuml InstanceofExplanation
+
+!theme plain
+skinparam class {
+    BackgroundColor #F0F8FF
+    BorderColor #4682B4
+}
+
+title "instanceof Operator trong Student Manager"
+
+abstract class Student {
+    # id: String
+    # name: String
+    # birthDate: Date
+    # major: String
+    
+    + getId(): String
+    + getName(): String
+    + getBirthDate(): Date
+    + getMajor(): String
+    + {abstract} calculateGPA(): double
+}
+
+class SoftwareStudent {
+    - javaScore: double
+    - htmlScore: double
+    - cssScore: double
+    
+    + getJavaScore(): double
+    + getHtmlScore(): double  
+    + getCssScore(): double
+    + calculateGPA(): double
+}
+
+class EconomicsStudent {
+    - marketingScore: double
+    - salesScore: double
+    
+    + getMarketingScore(): double
+    + getSalesScore(): double
+    + calculateGPA(): double
+}
+
+class StudentListViewDAO {
+    + insert(student: Student): boolean
+}
+
+Student <|-- SoftwareStudent
+Student <|-- EconomicsStudent
+
+StudentListViewDAO --> Student : uses
+
+note right of StudentListViewDAO
+    **Trong method insert():**
+    
+    ```java
+    public boolean insert(Student student) {
+        // student có thể là SoftwareStudent 
+        // hoặc EconomicsStudent tại runtime
+        
+        if (student instanceof SoftwareStudent) {
+            // Kiểm tra: student có phải SoftwareStudent?
+            SoftwareStudent sw = (SoftwareStudent) student;
+            // Cast an toàn vì đã kiểm tra instanceof
+            pstmt.setDouble(5, sw.getJavaScore());
+            // Truy cập method riêng của SoftwareStudent
+            
+        } else if (student instanceof EconomicsStudent) {
+            // Kiểm tra: student có phải EconomicsStudent?
+            EconomicsStudent ec = (EconomicsStudent) student;
+            // Cast an toàn vì đã kiểm tra instanceof
+            pstmt.setDouble(8, ec.getMarketingScore());
+            // Truy cập method riêng của EconomicsStudent
+        }
+    }
+    ```
+end note
+
+note left of Student
+    **instanceof kiểm tra:**
+    
+    **Runtime object type:**
+    • student instanceof SoftwareStudent
+    • student instanceof EconomicsStudent  
+    • student instanceof Student (luôn true)
+    
+    **Inheritance hierarchy:**
+    • SoftwareStudent IS-A Student ✓
+    • EconomicsStudent IS-A Student ✓
+    • Student IS-A Object ✓
+end note
+
+note bottom of SoftwareStudent
+    **Ví dụ cụ thể:**
+    
+    ```java
+    Student s1 = new SoftwareStudent(...);
+    Student s2 = new EconomicsStudent(...);
+    
+    // Kiểm tra kiểu:
+    s1 instanceof SoftwareStudent  → true
+    s1 instanceof EconomicsStudent → false
+    s1 instanceof Student          → true
+    
+    s2 instanceof SoftwareStudent  → false  
+    s2 instanceof EconomicsStudent → true
+    s2 instanceof Student          → true
+    ```
+end note
+
+note as SafetyCasting
+    **Tại sao cần instanceof trước khi cast?**
+    
+    **Không an toàn:**
+    ```java
+    SoftwareStudent sw = (SoftwareStudent) student;
+    // ☠️ ClassCastException nếu student là EconomicsStudent
+    ```
+    
+    **An toàn:**
+    ```java
+    if (student instanceof SoftwareStudent) {
+        SoftwareStudent sw = (SoftwareStudent) student;
+        // ✅ An toàn vì đã kiểm tra instanceof
+    }
+    ```
+end note
+
+@enduml

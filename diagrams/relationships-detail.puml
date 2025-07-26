@@ -1,0 +1,143 @@
+@startuml RelationshipDetailDiagram
+
+!theme plain
+skinparam class {
+    BackgroundColor #F8F8FF
+    BorderColor #4682B4
+    ArrowColor #CD5C5C
+    ArrowFontSize 10
+}
+
+title "UML Relationships Chi Tiết - Student Manager System"
+
+' Sample classes for demonstration
+class Parent {
+    - children: List<Child>
+    + addChild(): void
+}
+
+class Child {
+    - name: String
+    + getName(): String
+}
+
+class Library {
+    - books: List<Book>
+    + borrowBook(): void
+}
+
+class Book {
+    - title: String
+    + getTitle(): String
+}
+
+class Car {
+    - engine: Engine
+    + start(): void
+}
+
+class Engine {
+    - power: int
+    + run(): void
+}
+
+class StudentExample {
+    + study(): void
+}
+
+class SoftwareStudentExample {
+    + coding(): void
+}
+
+' ==== 4 LOẠI QUAN HỆ CHÍNH ====
+
+' 1. INHERITANCE (Thừa kế) - Mũi tên tam giác rỗng
+StudentExample <|-- SoftwareStudentExample : **1. INHERITANCE**\n(Thừa kế)\nIS-A relationship\nMũi tên: <|--
+
+' 2. COMPOSITION (Kết hợp mạnh) - Hình thoi đặc
+Car *-- Engine : **2. COMPOSITION**\n(Kết hợp mạnh)\nPart-of relationship\nEngine không thể tồn tại riêng\nMũi tên: *--
+
+' 3. AGGREGATION (Kết hợp yếu) - Hình thoi rỗng  
+Library o-- Book : **3. AGGREGATION**\n(Kết hợp yếu)\nHas-a relationship\nBook có thể tồn tại độc lập\nMũi tên: o--
+
+' 4. ASSOCIATION (Liên kết) - Mũi tên đơn giản
+Parent --> Child : **4. ASSOCIATION**\n(Liên kết)\nUses/knows relationship\nMũi tên: -->
+
+' Detailed explanation notes
+note right of StudentExample
+    **INHERITANCE (Thừa kế):**
+    • Quan hệ IS-A
+    • Con kế thừa thuộc tính/phương thức của cha
+    • Ví dụ: SoftwareStudent IS-A Student
+    • Notation: <|--
+    • Mũi tên: Tam giác rỗng
+end note
+
+note right of Car
+    **COMPOSITION (Kết hợp mạnh):**
+    • Quan hệ PART-OF mạnh
+    • Part không thể tồn tại mà không có Whole
+    • Whole chết → Part cũng chết
+    • Ví dụ: Engine là part của Car
+    • Notation: *--
+    • Mũi tên: Hình thoi đặc
+end note
+
+note right of Library
+    **AGGREGATION (Kết hợp yếu):**
+    • Quan hệ HAS-A yếu
+    • Part có thể tồn tại độc lập với Whole
+    • Whole chết → Part vẫn sống
+    • Ví dụ: Library has Books
+    • Notation: o--
+    • Mũi tên: Hình thoi rỗng
+end note
+
+note right of Parent
+    **ASSOCIATION (Liên kết):**
+    • Quan hệ USES/KNOWS
+    • Đối tượng biết về nhau
+    • Có thể có multiplicity
+    • Ví dụ: Parent knows Child
+    • Notation: -->
+    • Mũi tên: Mũi tên đơn giản
+end note
+
+' Application to Student Manager System
+note as ApplicationNote
+    **Áp dụng trong Student Manager:**
+    
+    **INHERITANCE:**
+    • Student ← SoftwareStudent
+    • Student ← EconomicsStudent
+    
+    **COMPOSITION:**
+    • UI *-- UseCase (UI sở hữu UseCase)
+    
+    **AGGREGATION:**
+    • UseCase o-- DAO (UseCase dùng DAO)
+    • UseCase o-- UI (UseCase dùng UI)
+    
+    **ASSOCIATION:**
+    • Dialog → UseCase (Dialog biết UseCase)
+    • DAO → Student (DAO tạo Student)
+    • Main → UI (Main tạo UI)
+end note
+
+' Multiplicity examples
+note as MultiplicityNote
+    **Multiplicity (Bội số):**
+    
+    • 1 : Chính xác 1
+    • 0..1 : 0 hoặc 1
+    • * : 0 hoặc nhiều
+    • 1..* : 1 hoặc nhiều
+    • 2..5 : Từ 2 đến 5
+    
+    **Ví dụ:**
+    Library "1" o-- "*" Book
+    Car "1" *-- "1" Engine
+    Parent "1" --> "1..*" Child
+end note
+
+@enduml

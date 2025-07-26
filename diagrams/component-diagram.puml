@@ -1,0 +1,120 @@
+@startuml ComponentDiagram
+
+!theme plain
+skinparam component {
+    BackgroundColor #F0F8FF
+    BorderColor #4682B4
+    FontSize 11
+}
+skinparam interface {
+    BackgroundColor #FFE4E1
+    BorderColor #CD5C5C
+}
+
+title "Component Diagram - Student Manager Architecture"
+
+package "Student Manager Application" {
+    
+    component "Presentation Layer" as PresentationComp {
+        component [StudentListViewUI] as UI
+        component [AddStudentDialog] as Dialog
+        
+        UI --> Dialog : opens
+    }
+    
+    component "Business Layer" as BusinessComp {
+        component [StudentListViewUseCase] as ListUC
+        component [AddStudentUseCase] as AddUC
+        component [Student Models] as Models
+        
+        ListUC --> Models : uses
+        AddUC --> Models : uses
+    }
+    
+    component "Persistence Layer" as PersistenceComp {
+        component [StudentListViewDAO] as DAO
+    }
+    
+    component [AppStudent] as Main
+}
+
+package "External Libraries" {
+    component [Swing Framework] as Swing
+    component [JDBC Driver] as JDBC
+}
+
+package "External Systems" {
+    database "SQL Server Database" as DB {
+        component [student table] as Table
+    }
+}
+
+' Interfaces
+interface "UI Events" as IUIEvents
+interface "Business Logic" as IBusiness  
+interface "Data Access" as IDataAccess
+interface "Database Connection" as IDBConnection
+
+' Interface connections
+PresentationComp ..> IUIEvents
+IUIEvents ..> BusinessComp
+
+BusinessComp ..> IBusiness
+IBusiness ..> PersistenceComp
+
+PersistenceComp ..> IDataAccess
+IDataAccess ..> IDBConnection
+IDBConnection ..> DB
+
+' External dependencies
+PresentationComp --> Swing : uses
+PersistenceComp --> JDBC : uses
+
+' Main component dependencies
+Main --> PresentationComp : creates
+Main --> BusinessComp : creates  
+Main --> PersistenceComp : creates
+
+note right of PresentationComp
+    **Responsibilities:**
+    • User interface rendering
+    • Event handling
+    • Data presentation
+    • Input validation (UI level)
+end note
+
+note right of BusinessComp
+    **Responsibilities:**
+    • Business logic execution
+    • Use case orchestration
+    • Domain model management
+    • Business validation
+end note
+
+note right of PersistenceComp
+    **Responsibilities:**
+    • Database operations
+    • Data mapping
+    • Connection management
+    • SQL execution
+end note
+
+note bottom of DB
+    **Database Schema:**
+    student table:
+    - id (PK)
+    - name
+    - birthday
+    - major
+    - scores (subject-specific)
+end note
+
+note top of Main
+    **Main Component:**
+    • Application entry point
+    • Dependency injection
+    • Component orchestration
+    • Error handling
+end note
+
+@enduml

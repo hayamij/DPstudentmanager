@@ -1,0 +1,110 @@
+@startuml PackageDiagram
+
+!theme plain
+skinparam packageStyle rectangle
+skinparam package {
+    BackgroundColor<<Presentation>> #E8F5E8
+    BackgroundColor<<Business>> #E8E8F5
+    BackgroundColor<<Persistence>> #F5E8E8
+}
+
+title "Package Diagram - Kiến trúc 3 tầng Student Manager"
+
+package "vn.edu.giadinh" {
+    
+    package "presentation" <<Presentation>> {
+        class StudentListViewUI
+        class AddStudentDialog
+        note top : "Tầng giao diện người dùng\n- Swing components\n- Event handling\n- UI logic"
+    }
+    
+    package "business" <<Business>> {
+        abstract class Student
+        class SoftwareStudent
+        class EconomicsStudent
+        class StudentListViewUseCase
+        class AddStudentUseCase
+        note top : "Tầng logic nghiệp vụ\n- Business rules\n- Validation\n- Use cases"
+    }
+    
+    package "persistence" <<Persistence>> {
+        class StudentListViewDAO
+        note top : "Tầng truy cập dữ liệu\n- Database operations\n- Data mapping\n- Connection management"
+    }
+    
+    class AppStudent
+    note right of AppStudent : "Main class\nkhởi tạo hệ thống"
+}
+
+package "External Dependencies" {
+    package "javax.swing" {
+        class JFrame
+        class JDialog
+        class JTable
+        class JTextField
+        class JButton
+        note bottom : "Swing UI Framework"
+    }
+    
+    package "java.sql" {
+        interface Connection
+        interface PreparedStatement
+        interface ResultSet
+        interface DriverManager
+        note bottom : "JDBC API"
+    }
+    
+    package "SQL Server Database" {
+        class StudentTable {
+            + id: NVARCHAR(10)
+            + name: NVARCHAR(100)
+            + birthday: DATE
+            + major: NVARCHAR(20)
+            + javaScore: DECIMAL(4,2)
+            + htmlScore: DECIMAL(4,2)
+            + cssScore: DECIMAL(4,2)
+            + marketing: DECIMAL(4,2)
+            + salesScore: DECIMAL(4,2)
+        }
+        note bottom : "Database Schema"
+    }
+    
+    package "Microsoft JDBC Driver" {
+        class SQLServerDriver
+        note bottom : "mssql-jdbc-12.10.1.jre11.jar"
+    }
+}
+
+' Layer dependencies (one-way)
+presentation ..> business : "depends on"
+business ..> persistence : "depends on"
+
+' External dependencies
+presentation ..> "javax.swing" : "uses"
+persistence ..> "java.sql" : "uses"
+persistence ..> "SQL Server Database" : "connects to"
+persistence ..> "Microsoft JDBC Driver" : "uses"
+
+' Main class dependencies
+AppStudent ..> presentation : "creates"
+AppStudent ..> business : "creates"
+AppStudent ..> persistence : "creates"
+
+note as N1
+    **Nguyên tắc Dependency:**
+    - Presentation chỉ phụ thuộc vào Business
+    - Business chỉ phụ thuộc vào Persistence
+    - Không có dependency ngược lại
+    - Loose coupling giữa các tầng
+end note
+
+note as N2
+    **Lợi ích kiến trúc 3 tầng:**
+    ✓ Separation of Concerns
+    ✓ Maintainability
+    ✓ Testability
+    ✓ Scalability
+    ✓ Reusability
+end note
+
+@enduml

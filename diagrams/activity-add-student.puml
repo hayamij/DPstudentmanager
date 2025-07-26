@@ -1,0 +1,110 @@
+@startuml AddStudentActivity
+
+!theme plain
+skinparam activity {
+    BackgroundColor #F0F0F0
+    BorderColor #808080
+    FontSize 12
+}
+skinparam diamond {
+    BackgroundColor #FFE4B5
+    BorderColor #CD853F
+}
+
+title "Activity Diagram - Quy trình thêm sinh viên"
+
+start
+
+:User click nút "Thêm";
+:Hiển thị AddStudentDialog;
+:User nhập thông tin cơ bản
+(ID, Tên, Ngày sinh);
+
+:User chọn chuyên ngành;
+if (Chuyên ngành được chọn?) then (Software)
+    :Hiển thị các trường điểm:
+    - Java Score
+    - HTML Score  
+    - CSS Score;
+    :User nhập điểm các môn lập trình;
+else (Economics)
+    :Hiển thị các trường điểm:
+    - Marketing Score
+    - Sales Score;
+    :User nhập điểm các môn kinh tế;
+endif
+
+:User click nút "Lưu";
+
+:Validate dữ liệu đầu vào;
+if (Dữ liệu hợp lệ?) then (Không)
+    :Hiển thị thông báo lỗi validation;
+    note right
+        Các lỗi có thể có:
+        - Trường bắt buộc trống
+        - Định dạng ngày sai
+        - Điểm số không hợp lệ
+        - Mã sinh viên không đúng format
+    end note
+    stop
+else (Có)
+    :Tạo đối tượng Student
+    (SoftwareStudent hoặc EconomicsStudent);
+    
+    :Gọi AddStudentUseCase.execute();
+    :Validate business rules;
+    
+    if (Business rules hợp lệ?) then (Không)
+        :Hiển thị lỗi business logic;
+        note right
+            Business rules:
+            - Student không null
+            - ID không trống
+            - Tên không trống
+            - Ngày sinh hợp lý
+        end note
+        stop
+    else (Có)
+        :Gọi DAO.insert(student);
+        :Thực hiện SQL INSERT;
+        
+        if (Database insert thành công?) then (Không)
+            :Hiển thị lỗi database;
+            note right
+                Database errors:
+                - Connection timeout
+                - Duplicate key (ID trùng)
+                - SQL constraint violation
+                - Database không khả dụng
+            end note
+            stop
+        else (Có)
+            :Hiển thị thông báo thành công;
+            :Đóng AddStudentDialog;
+            :Gọi refreshList();
+            :Cập nhật bảng danh sách sinh viên;
+            :Hiển thị sinh viên mới trong danh sách;
+        endif
+    endif
+endif
+
+stop
+
+note right of start
+    **Input Requirements:**
+    - Mã sinh viên (unique)
+    - Họ tên đầy đủ
+    - Ngày sinh (dd/MM/yyyy)
+    - Chuyên ngành (Software/Economics)
+    - Điểm số tương ứng (0-10)
+end note
+
+note left of stop
+    **Success Criteria:**
+    ✓ Sinh viên được lưu vào database
+    ✓ Danh sách được cập nhật
+    ✓ UI hiển thị thông tin mới
+    ✓ Dialog được đóng
+end note
+
+@enduml

@@ -1,0 +1,179 @@
+@startuml StudentManagerClassDiagram
+
+!theme plain
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+' Define colors for different layers
+!define PRESENTATION_COLOR #E8F5E8
+!define BUSINESS_COLOR #E8E8F5  
+!define PERSISTENCE_COLOR #F5E8E8
+
+package "Presentation Layer" <<Rectangle>> PRESENTATION_COLOR {
+    class StudentListViewUI {
+        - txtSearch: JTextField
+        - btnAdd: JButton
+        - table: JTable
+        - model: DefaultTableModel
+        - fmt: SimpleDateFormat
+        - listViewUseCase: StudentListViewUseCase
+        - addStudentUseCase: AddStudentUseCase
+        
+        + StudentListViewUI()
+        + showList(students: List<Student>): void
+        + setUseCases(listUseCase: StudentListViewUseCase, addUseCase: AddStudentUseCase): void
+        + refreshList(): void
+        - setupEvents(): void
+        - openAddStudentDialog(): void
+    }
+    
+    class AddStudentDialog {
+        - txtId: JTextField
+        - txtName: JTextField
+        - txtBirthday: JTextField
+        - cmbMajor: JComboBox<String>
+        - txtJavaScore: JTextField
+        - txtHtmlScore: JTextField
+        - txtCssScore: JTextField
+        - txtMarketing: JTextField
+        - txtSalesScore: JTextField
+        - scorePanel: JPanel
+        - btnSave: JButton
+        - btnCancel: JButton
+        - addStudentUseCase: AddStudentUseCase
+        - parentUI: StudentListViewUI
+        - dateFormat: SimpleDateFormat
+        
+        + AddStudentDialog(parent: StudentListViewUI, useCase: AddStudentUseCase)
+        - initComponents(): void
+        - setupLayout(): void
+        - updateScorePanel(): void
+        - setupEvents(): void
+        - saveStudent(): void
+    }
+}
+
+package "Business Layer" <<Rectangle>> BUSINESS_COLOR {
+    abstract class Student {
+        # id: String
+        # name: String
+        # birthDate: Date
+        # major: String
+        
+        # Student(id: String, name: String, birthDate: Date, major: String)
+        + {abstract} calculateGPA(): double
+        + classifyAcademic(): String
+        + getId(): String
+        + getName(): String
+        + getBirthDate(): Date
+        + getMajor(): String
+    }
+    
+    class SoftwareStudent {
+        - javaScore: double
+        - htmlScore: double
+        - cssScore: double
+        
+        + SoftwareStudent(id: String, name: String, birthDate: Date, javaScore: double, htmlScore: double, cssScore: double)
+        + calculateGPA(): double
+        + getJavaScore(): double
+        + getHtmlScore(): double
+        + getCssScore(): double
+    }
+    
+    class EconomicsStudent {
+        - marketingScore: double
+        - salesScore: double
+        
+        + EconomicsStudent(id: String, name: String, birthDate: Date, marketingScore: double, salesScore: double)
+        + calculateGPA(): double
+        + getMarketingScore(): double
+        + getSalesScore(): double
+    }
+    
+    class StudentListViewUseCase {
+        - studentListViewDAO: StudentListViewDAO
+        - studentListViewUI: StudentListViewUI
+        
+        + StudentListViewUseCase(dao: StudentListViewDAO, ui: StudentListViewUI)
+        + execute(): void
+    }
+    
+    class AddStudentUseCase {
+        - studentDAO: StudentListViewDAO
+        
+        + AddStudentUseCase(studentDAO: StudentListViewDAO)
+        + execute(student: Student): boolean
+    }
+}
+
+package "Persistence Layer" <<Rectangle>> PERSISTENCE_COLOR {
+    class StudentListViewDAO {
+        + StudentListViewDAO()
+        + getAll(): List<Student>
+        + insert(student: Student): boolean
+    }
+}
+
+class AppStudent {
+    + {static} main(args: String[]): void
+}
+
+' ==== UML RELATIONSHIPS ====
+
+' 1. INHERITANCE (Generalization) - IS-A relationship
+Student <|-- SoftwareStudent : inheritance
+Student <|-- EconomicsStudent : inheritance
+
+' 2. COMPOSITION - STRONG ownership (part cannot exist without whole)
+StudentListViewUI *-- StudentListViewUseCase : composition\n(UI owns UseCase)
+StudentListViewUI *-- AddStudentUseCase : composition\n(UI owns UseCase)
+
+' 3. AGGREGATION - WEAK ownership (part can exist independently)
+StudentListViewUseCase o-- StudentListViewDAO : aggregation\n(UseCase uses DAO)
+AddStudentUseCase o-- StudentListViewDAO : aggregation\n(UseCase uses DAO)
+StudentListViewUseCase o-- StudentListViewUI : aggregation\n(UseCase uses UI)
+
+' 4. ASSOCIATION - Simple relationship/dependency
+AddStudentDialog --> AddStudentUseCase : association\n(Dialog uses UseCase)
+AddStudentDialog --> StudentListViewUI : association\n(Dialog knows parent)
+StudentListViewDAO --> Student : association\n(DAO creates Student)
+StudentListViewDAO --> SoftwareStudent : association\n(DAO creates SoftwareStudent)
+StudentListViewDAO --> EconomicsStudent : association\n(DAO creates EconomicsStudent)
+
+' Main class dependencies (also associations)
+AppStudent --> StudentListViewUI : association\n(Main creates UI)
+AppStudent --> StudentListViewDAO : association\n(Main creates DAO)
+AppStudent --> StudentListViewUseCase : association\n(Main creates UseCase)
+AppStudent --> AddStudentUseCase : association\n(Main creates UseCase)
+
+note top of Student : Abstract class with Template Method pattern\n(calculateGPA() is abstract)
+
+note right of StudentListViewDAO : DAO Pattern for database access\nCreates Student objects from ResultSet
+
+note bottom of AddStudentDialog : Modal dialog for adding new students\nUses AddStudentUseCase for business logic
+
+note left of AppStudent : Main entry point\nCreates and wires all components
+
+' Relationship Legend
+note as RelationshipLegend
+    **UML Relationship Types Used:**
+    
+    **1. Inheritance (Generalization):** <|--
+    • IS-A relationship
+    • Student ← SoftwareStudent/EconomicsStudent
+    
+    **2. Composition:** *--
+    • Strong ownership (part dies with whole)
+    • UI owns its UseCases
+    
+    **3. Aggregation:** o--
+    • Weak ownership (part can exist independently)
+    • UseCase uses DAO, UseCase uses UI
+    
+    **4. Association:** -->
+    • Simple relationship/dependency
+    • Dialog uses UseCase, DAO creates Students
+end note
+
+@enduml

@@ -1,0 +1,100 @@
+@startuml AddStudentSequence
+
+!theme plain
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 20
+skinparam maxmessagesize 120
+
+title "Sequence Diagram - Thêm sinh viên mới"
+
+actor User
+participant "ui: StudentListViewUI" as UI
+participant "dialog: AddStudentDialog" as Dialog
+participant "addUseCase: AddStudentUseCase" as AddUseCase
+participant "dao: StudentListViewDAO" as DAO
+participant "listUseCase: StudentListViewUseCase" as ListUseCase
+database "SQL Server Database" as DB
+
+User -> UI: Click nút "Thêm"
+activate UI
+
+UI -> Dialog: new AddStudentDialog(this, addUseCase)
+activate Dialog
+note right: Tạo dialog thêm sinh viên
+
+Dialog --> UI: Dialog được tạo
+UI -> Dialog: setVisible(true)
+Dialog --> User: Hiển thị form nhập liệu
+
+User -> Dialog: Điền thông tin và click "Lưu"
+Dialog -> Dialog: validateInput()
+note right: Kiểm tra định dạng\nngày, điểm số, v.v.
+
+alt Validation thành công
+    Dialog -> Dialog: createStudentObject()
+    note right: Tạo SoftwareStudent\nhoặc EconomicsStudent
+
+    Dialog -> AddUseCase: execute(student)
+    activate AddUseCase
+    note right: Thực hiện use case\nthêm sinh viên
+
+    AddUseCase -> AddUseCase: validateBusinessRules()
+    note right: Kiểm tra quy tắc\nnghiệp vụ
+
+    AddUseCase -> DAO: insert(student)
+    activate DAO
+    note right: Chèn sinh viên\nvào database
+
+    DAO -> DB: INSERT INTO student VALUES(...)
+    activate DB
+    note right: Thực hiện SQL INSERT
+    DB --> DAO: Kết quả (success/failure)
+    deactivate DB
+
+    DAO --> AddUseCase: boolean result
+    deactivate DAO
+
+    AddUseCase --> Dialog: true (thành công)
+    deactivate AddUseCase
+
+    Dialog -> Dialog: Hiển thị thông báo thành công
+    Dialog -> UI: refreshList()
+    note right: Làm mới danh sách\nsau khi thêm
+
+    UI -> ListUseCase: execute()
+    activate ListUseCase
+
+    ListUseCase -> DAO: getAll()
+    activate DAO
+    
+    DAO -> DB: SELECT * FROM student
+    activate DB
+    DB --> DAO: Updated ResultSet
+    deactivate DB
+    
+    DAO --> ListUseCase: Updated List<Student>
+    deactivate DAO
+
+    ListUseCase -> UI: showList(updatedStudents)
+    deactivate ListUseCase
+
+    Dialog -> Dialog: dispose()
+    deactivate Dialog
+
+    UI --> User: Danh sách đã cập nhật
+    deactivate UI
+
+else Validation thất bại
+    Dialog -> Dialog: Hiển thị thông báo lỗi
+    Dialog --> User: Thông báo lỗi validation
+end
+
+note over User, DB
+    Quy trình này đảm bảo:
+    1. Validation đầy đủ ở cả UI và Business layer
+    2. Transaction safety cho database
+    3. Cập nhật UI ngay lập tức
+    4. Error handling ở mọi bước
+end note
+
+@enduml
